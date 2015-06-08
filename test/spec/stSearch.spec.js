@@ -158,6 +158,54 @@ describe('stSearch Directive', function () {
             stConfig.search.delay = oldDelay;
         }));
     });
+    
+    describe('select predicate', function () {
+        beforeEach(inject(function ($compile, $rootScope) {
+
+            rootScope = $rootScope;
+            scope = $rootScope.$new();
+            scope.rowCollection = [
+                {name: 'Leponge', firstname: 'Bob', age: 22},
+                {name: 'Faivre', firstname: 'Blandine', age: 44}
+            ];
+
+            var template = '<table st-table="rowCollection">' +
+              '<thead>' +
+              '<tr>' +
+              '<th></th>' +
+              '<th></th>' +
+              '<th><select st-search="age"><option></option><option>22</option><option>44</option></select></th>' +
+              '</tr>' +
+              '</thead>' +
+              '<tbody>' +
+              '<tr class="test-filtered" ng-repeat="row in rowCollection">' +
+              '<td>{{row.name}}</td>' +
+              '<td>{{row.firstname}}</td>' +
+              '<td>{{row.age}}</td>' +
+              '</tr>' +
+              '</tbody>' +
+              '</table>';
+
+            element = $compile(template)(scope);
+            scope.$apply();
+        }));
+
+        it('should keep only item which matches', inject(function ($timeout) {
+            var select = element.find('[st-search=age]');
+            var trs;
+            select[0].value = 22;
+            select.triggerHandler('change');
+            trs = element.find('tr.test-filtered');
+            expect(trs.length).toBe(2);
+            $timeout.flush();
+            trs = element.find('tr.test-filtered');
+            expect(trs.length).toBe(1);
+            expect(trToModel(trs)).toEqual([
+                {name: 'Leponge', firstname: 'Bob', age: 22}
+            ]);
+        }));
+
+    });
 
     describe('binding predicate', function () {
 
